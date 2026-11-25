@@ -38,7 +38,7 @@ library(Rcpp)
  # library(rnaturalearth)
  # library(rnaturalearthdata)
 
-setwd("C:/Users/gunas015/Desktop/ENM_SA")
+setwd("C:/Users/")
 
 source("functions.R") #to calculate 20% from cross validation 
 source("functionsCV.R")
@@ -111,124 +111,6 @@ Pigs<-raster("FAO_STAT/dataverse_files_pigs/5_Pg_2015_Da.tif")
 Goat<-raster("FAO_STAT/dataverse_files_goats/5_Gt_2015_Da.tif")
 Sheep<-raster("FAO_STAT/dataverse_files_sheep/5_Sh_2015_Da.tif")
 
-
-#________________________________________________________________________________________#
-#     Roads (Do not run this, already Tif file created)
-#________________________________________________________________________________________#
-
-#Read shape file
-# Road<-read_sf(dsn="C:/Users/gunas015/Desktop/ENM_SA/South Asia Roads",layer = "RoadsT")
-# Road
-# #convert shape to Raster
-# #You can change the projection
-# pgeo <- st_transform(Road, CRS('+proj=longlat +datum=WGS84'))
-# 
-# ## Set up a raster "template" for a 0.5 degree grid
-# ext <-floor(extent(pgeo))
-# rr <- raster(ext, res=0.5)
-# rr <- rasterize(pgeo, rr, field=1)
-# 
-# ## Plot raster
-# plot(rr)
-
-#Write Raster
-#writeRaster(rr, filename = "South Asia Roads/SA_Roads.tif", format = "GTiff")
-
-#road<-raster("South Asia Roads/SA_Roads.tif")
-#plot(road)
-
-road<-raster("GRIP4_Region6_vector_fgdb/raster_road/w001001.adf")
-plot(road)
-
-#_______________________________________________________________________________#
-#           Land cover NASA #Change to NDVI 
-#_______________________________________________________________________________#
-
-#to extract rdf4 files
-#https://stackoverflow.com/questions/36772341/reading-hdf-files-into-r-and-converting-them-to-geotiff-rasters
-
-# library(gdalUtilities)
-# library(gdalUtils)
-# library(devtools)
-#install.packages("devtools")
-#devtools:::install_github("gearslaboratory/gdalUtils")
-
-#install_github("JoshOBrien/gdalUtilities")
-
-# Provides detailed data on hdf4 files, nothing important here  
-
-# gdalinfo("C:/Users/gunas015/Desktop/ENM_SA/NASALandcover2/MCD12C1.A2020001.006.2021362215328.hdf")
-# 
-# # Tells me what subdatasets are within my hdf4 MODIS files and makes them into a list
-# 
-# #sds <- get_subdatasets("MCD12C1.A2020001.006.2021362215328.hdf")
-# sds <- get_subdatasets("C:/Users/gunas015/Desktop/ENM_SA/NASALandcover2/MCD12C1.A2020001.006.2021362215328.hdf")
-# sds
-# 
-# gdal_setInstallation()
-# gdal_setInstallation(ignore.full_scan=FALSE)
-# library(rgdal)
-# 
-# # Extraction of metadata via `GDALinfo`    
-# filename <-("C:/Users/gunas015/Desktop/ENM_SA/NASALandcover2/MCD12C1.A2020001.006.2021362215328.hdf")
-# hdf<-getHdf("C:/Users/gunas015/Desktop/ENM_SA/NASALandcover2/MCD12C1.A2020001.006.2021362215328.hdf")
-# gdalinfo <- GDALinfo(filename,returnScaleOffset = FALSE)
-# metadata <- attr(gdalinfo,"subdsmdata")
-# metadata
-# 
-# # Extraction of SDS string for parameter     
-# sds <- metadata[grep("Land_Cover_Type1", metadata)[10]] #Column name
-# sds
-# sds <- sapply(strsplit(sds, "="),"[[", 2) #[[ is used for extracting single item
-# sds
-# # Raster import via `readGDAL`   
-# sds.rg <- readGDAL(sds)
-# 
-# library(maptools)
-
-#trying to convert each separate layer in to Ratser and then import ot as a Tif file 
-
-#____________________________________________________________________________________#
-#         LAND COVER FAO 
-#____________________________________________________________________________________#
-#land<-raster("Land Cover/luswrld/lus_wrld/vat.adf") #replaced with NDVI 
-#plot(land)
-
-#___________________________________________________________________________________#
-# NDVI Data
-#___________________________________________________________________________________#
-land<-raster("Corpurnicus Land Cover/ndvi_merge/w001001x.adf") 
-plot(land) #already cropped##
-levels(land) #categorical 
-#______________________________________________________________________
-# LIVESTOCK PRODUCTION SYSTEMS
-#________________________________________________________________________#
-lps<-raster("GLPS_2011/ps_cmb/W001001.adf")
-plot(lps)
-levels(lps) #
-
-#Histogram of NDVI Values
-# hist(lps,
-#      main = "Distribution of NDVI values",
-#      xlab = "NDVI",
-#      ylab= "Frequency",
-#      col = "wheat",
-#      xlim = c(2,14),
-#      breaks = 30,
-#      xaxt = 'n')
-# axis(side=1, at = seq(1,14), labels = seq(1,14))
-
-
-#to obtain land with vegetaion index <0.4 
-veg <- reclassify(lps, cbind(-Inf, 0.4, NA))
-plot(veg, main = 'Veg cover')
-
-
-#_________________________________________________________________
-#  CROP LAND
-#________________________________________________________________________
-cropl<-raster("GlcShare_v10_02/glc_shv10_02.tif")
-plot(cropl)
 
 #_____________________________________________________________________________________#
 #       Cropping Raster
@@ -485,45 +367,6 @@ myControl<- trainControl(## 10-fold CV)
   allowParallel=TRUE,
   selectionFunction = "best")
 
-
-
-#________________________________________________________________________________
-#
-#############Logistic Regression####################
-#________________________________________________________________________________
-
-# colnames(dataR)
-# #dataR$Class <- factor(dataR$Class)
-# glm.fit <- glm(Class ~ Mean.Diurnal.Range+Isothermality+Max.Temp.Warmest.Month+Preci.Wet.Month+
-#                  Precip.Dry.Month+Preci.Seasonality+Buff.Density+Cattle.Density+Goat.Density+
-#                  Sheep.Density+Land.Cover+Road.Density, data = dataR, family = "quasibinomial")
-# glm.fit
-# plot(glm.fit) #to obtain residual plots 
-# 
-# ################________________________________________________________#####
-# set.seed(125) #again this is a stochastic model so set the seed to reproducibility.
-# glm.fit <- train(data.train.descr,data.train.class,
-#                  method = "glm",
-#                  metric="ROC", # will use accuracy instead
-#                  family="binomial",
-#                  trControl= myControl)
-# glm.fit
-# # estimate model performance in terms of a confusion matrix from repeated cross-validation
-# oof <- glm.fit$pred
-# 
-# # consider only the best tuned model
-# oof <- oof[which(oof$parameter==glm.fit$bestTune[,'parameter']),]
-# 
-# repeats<-glm.fit$control$repeats
-# 
-# glm.performance.cv <- EstimatePerformanceCV(oof=oof,repeats=repeats)
-# 
-# glm.performance.cv
-# 
-# # estimate error rates from repeated cross-validation
-# glm.error.cv <- EstimateErrorRateCV(oof=oof,repeats=repeats)
-# 
-# rm(oof,repeats)
 #________________________________________________________________________________
 #
 #################Random Forests #################
